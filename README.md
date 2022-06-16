@@ -1,1 +1,1 @@
-# wordle-exercose
+# wordle-exercise

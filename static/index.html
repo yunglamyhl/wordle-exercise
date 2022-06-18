@@ -10,8 +10,9 @@
 <body>
 
     <div id="app">
-        <button v-on:click="startGuessing">Start</button>
-        <button v-on:click="stopGuessing">Stop</button>
+        <button v-on:click="startGuessing" :disabled="isGameOver">Start</button>
+        <button v-on:click="stopGuessing" :disabled="isGameOver">Stop</button>
+        <button v-on:click="refresh">Reset</button>
 
         <div v-if="words.length > 0" v-for="(word, index) in words" v-bind:key="word">
             {{ index+1 }}.
@@ -29,15 +30,27 @@
                     seed: Math.floor(Math.random() * 1111111111),
                     isGuessing: false,
                     words: [],
-                    possibleChar: "abcdefghijklmnopqrstuvwxyz"
+                    possibleChar: "abcdefghijklmnopqrstuvwxyz",
+                    possibleGuess: [],
+                    isGameOver: false,
                 }
             },
             methods: {
                 genRandomWord: function () {
-                    var text = "";
-
-                    for (var i = 0; i < 5; i++)
+                    var text = ""
+                    for (var i = 0; i < 5; i++) {
                         text += this.possibleChar.charAt(Math.floor(Math.random() * this.possibleChar.length));
+                    }
+
+                    let possibleGuess = '';
+                    if (this.possibleGuess.length > 0) {
+                        if (Object.keys(this.possibleGuess).length == 5) {
+                            this.possibleGuess.forEach(function (char, index) {
+                                possibleGuess += char                               
+                            })
+                            return possibleGuess
+                        }
+                    }
 
                     return text;
                 },
@@ -60,21 +73,23 @@
                                 let possibleChar = _this.possibleChar
                                 allCorrect &= obj['result'] == 'correct'
                                 if (obj['result'] == 'correct') {
-                                    guess.push({letter: obj['guess'], color: 'green'})
+                                    guess.push({ letter: obj['guess'], color: 'green' })
+                                    _this.possibleGuess[obj['slot']] = obj['guess']
                                 }
                                 if (obj['result'] == 'present') {
-                                    guess.push({letter: obj['guess'], color: 'yellow'})
+                                    guess.push({ letter: obj['guess'], color: 'yellow' })
                                 }
                                 if (obj['result'] == 'absent') {
                                     possibleChar = _this.possibleChar.replace(obj['guess'], '')
-                                    guess.push({letter: obj['guess'], color: 'black'})
+                                    guess.push({ letter: obj['guess'], color: 'black' })
                                 }
                                 _this.possibleChar = possibleChar
                             });
-                            console.log(_this.possibleChar);
+                           
                             this.words.push(guess)
                             if (allCorrect) {
                                 _this.isGuessing = false
+                                _this.isGameOver = true
                                 alert(`Congratulation! ${word} is the word!`)
                             } else {
                                 if (_this.isGuessing) {
@@ -85,6 +100,9 @@
                 },
                 stopGuessing: function () {
                     this.isGuessing = false
+                },
+                refresh: function () {
+                    location.reload()
                 }
             },
         }).mount('#app')

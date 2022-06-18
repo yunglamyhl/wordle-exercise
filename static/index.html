@@ -29,15 +29,15 @@
                     seed: Math.floor(Math.random() * 1111111111),
                     isGuessing: false,
                     words: [],
+                    possibleChar: "abcdefghijklmnopqrstuvwxyz"
                 }
             },
             methods: {
                 genRandomWord: function () {
                     var text = "";
-                    var possible = "abcdefghijklmnopqrstuvwxyz";
 
                     for (var i = 0; i < 5; i++)
-                        text += possible.charAt(Math.floor(Math.random() * possible.length));
+                        text += this.possibleChar.charAt(Math.floor(Math.random() * this.possibleChar.length));
 
                     return text;
                 },
@@ -57,6 +57,7 @@
                             let allCorrect = true;
                             let guess = []
                             json.forEach(function (obj, index) {
+                                let possibleChar = _this.possibleChar
                                 allCorrect &= obj['result'] == 'correct'
                                 if (obj['result'] == 'correct') {
                                     guess.push({letter: obj['guess'], color: 'green'})
@@ -65,9 +66,12 @@
                                     guess.push({letter: obj['guess'], color: 'yellow'})
                                 }
                                 if (obj['result'] == 'absent') {
+                                    possibleChar = _this.possibleChar.replace(obj['guess'], '')
                                     guess.push({letter: obj['guess'], color: 'black'})
                                 }
+                                _this.possibleChar = possibleChar
                             });
+                            console.log(_this.possibleChar);
                             this.words.push(guess)
                             if (allCorrect) {
                                 _this.isGuessing = false

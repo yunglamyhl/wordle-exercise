@@ -13,10 +13,12 @@
         <button v-on:click="startGuessing">Start</button>
         <button v-on:click="stopGuessing">Stop</button>
 
-        <div v-if="words.length > 0" v-for="word in words" v-bind:key="word">
-            {{ word }}
+        <div v-if="words.length > 0" v-for="(word, index) in words" v-bind:key="word">
+            {{ index+1 }}.
+            <span v-for="char in word" v-bind:style="{ color: char.color }">
+                {{ char.letter }}
+            </span>
         </div>
-
     </div>
 
     <script>
@@ -47,17 +49,26 @@
                 },
                 guess: function () {
                     let _this = this;
-                    let word = this.genRandomWord();
-                    this.words.push(word)
+                    let word = this.genRandomWord()
 
                     fetch(`http://localhost:8000/check/?word=${word}&seed=${this.seed}`)
                         .then(response => response.json())
                         .then(json => {
                             let allCorrect = true;
+                            let guess = []
                             json.forEach(function (obj, index) {
                                 allCorrect &= obj['result'] == 'correct'
+                                if (obj['result'] == 'correct') {
+                                    guess.push({letter: obj['guess'], color: 'green'})
+                                }
+                                if (obj['result'] == 'present') {
+                                    guess.push({letter: obj['guess'], color: 'yellow'})
+                                }
+                                if (obj['result'] == 'absent') {
+                                    guess.push({letter: obj['guess'], color: 'black'})
+                                }
                             });
-
+                            this.words.push(guess)
                             if (allCorrect) {
                                 _this.isGuessing = false
                                 alert(`Congratulation! ${word} is the word!`)
@@ -69,7 +80,7 @@
                         }).catch(err => console.log(err))
                 },
                 stopGuessing: function () {
-                    this.isGuessing = false;
+                    this.isGuessing = false
                 }
             },
         }).mount('#app')

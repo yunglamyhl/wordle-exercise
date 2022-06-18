@@ -1,21 +1,78 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title>Wordle</title>
-    <link rel="stylesheet" href="style.css"/>
+    <script src="https://unpkg.com/vue@3"></script>
 </head>
-    <body>
 
-        <div class="game-container">
-            <div class="title-container">
-                <h1>Wordle</h1>
-            </div>
-            <div class="message-container"></div>
-            <div class="tile-container"></div>
-            <div class="key-container"></div>
+<body>
+
+    <div id="app">
+        <button v-on:click="startGuessing">Start</button>
+        <button v-on:click="stopGuessing">Stop</button>
+
+        <div v-if="words.length > 0" v-for="word in words" v-bind:key="word">
+            {{ word }}
         </div>
 
-        <script src="app.js"></script>
-    </body>
+    </div>
+
+    <script>
+        const { createApp } = Vue
+        createApp({
+            data() {
+                return {
+                    seed: Math.floor(Math.random() * 1111111111),
+                    isGuessing: false,
+                    words: [],
+                }
+            },
+            methods: {
+                genRandomWord: function () {
+                    var text = "";
+                    var possible = "abcdefghijklmnopqrstuvwxyz";
+
+                    for (var i = 0; i < 5; i++)
+                        text += possible.charAt(Math.floor(Math.random() * possible.length));
+
+                    return text;
+                },
+                startGuessing: function () {
+                    this.isGuessing = true;
+                    if (this.isGuessing) {
+                        this.guess()
+                    }
+                },
+                guess: function () {
+                    let _this = this;
+                    let word = this.genRandomWord();
+                    this.words.push(word)
+
+                    fetch(`http://localhost:8000/check/?word=${word}&seed=${this.seed}`)
+                        .then(response => response.json())
+                        .then(json => {
+                            let allCorrect = true;
+                            json.forEach(function (obj, index) {
+                                allCorrect &= obj['result'] == 'correct'
+                            });
+
+                            if (allCorrect) {
+                                _this.isGuessing = false
+                            } else {
+                                if (_this.isGuessing) {
+                                    _this.guess()
+                                }
+                            }
+                        }).catch(err => console.log(err))
+                },
+                stopGuessing: function () {
+                    this.isGuessing = false;
+                }
+            },
+        }).mount('#app')
+    </script>
+</body>
+
 </html>

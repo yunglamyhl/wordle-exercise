@@ -12,7 +12,7 @@
     <div id="app">
         <button v-on:click="startGuessing" :disabled="isGameOver">Start</button>
         <button v-on:click="stopGuessing" :disabled="isGameOver">Stop</button>
-        <button v-on:click="refresh">Reset</button>
+        <button v-on:click="reset">Reset</button>
 
         <div v-if="words.length > 0" v-for="(word, index) in words" v-bind:key="word">
             {{ index+1 }}.
@@ -101,8 +101,13 @@
                 stopGuessing: function () {
                     this.isGuessing = false
                 },
-                refresh: function () {
-                    location.reload()
+                reset: function () {
+                    this.isGuessing = false
+                    this.words = []
+                    this.seed = Math.floor(Math.random() * 1111111111)
+                    this.possibleChar = "abcdefghijklmnopqrstuvwxyz"
+                    this.possibleGuess = []
+                    this.isGameOver = false
                 }
             },
         }).mount('#app')
